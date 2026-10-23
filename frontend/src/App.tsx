@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { recognizeVideo, type PredictionResponse } from "./api";
 
 type Status = "ready" | "recording" | "processing" | "prediction" | "error";
+type CaptureMode = "camera" | "upload";
+type ServiceStatus = "checking" | "ready" | "not_ready" | "offline";
 type EventName =
   | "recognition_started"
   | "recognition_completed"
@@ -23,6 +25,15 @@ const statusCopy: Record<Status, string> = {
   error: "Recognition needs attention",
 };
 
+const serviceStatusCopy: Record<ServiceStatus, string> = {
+  checking: "Checking",
+  ready: "Online",
+  not_ready: "Needs setup",
+  offline: "Offline",
+};
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+
 function LandmarkMark() {
   const points = [
     [92, 25], [68, 30], [48, 43], [35, 58], [26, 71],
@@ -42,6 +53,8 @@ function LandmarkMark() {
 
 function App() {
   const [status, setStatus] = useState<Status>("ready");
+  const [captureMode, setCaptureMode] = useState<CaptureMode>("camera");
+  const [serviceStatus, setServiceStatus] = useState<ServiceStatus>("checking");
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [prediction, setPrediction] = useState<PredictionResponse | null>(null);
@@ -62,6 +75,19 @@ function App() {
   const chunksRef = useRef<Blob[]>([]);
   const editStartedRef = useRef(false);
 
+  const checkService = useCallback(async () => {
+    setServiceStatus("checking");
+    try {
+      const response = await fetch(`${API_BASE_URL}/health`);
+      const payload: unknown = await response.json().catch(() => null);
+      const ready = response.ok && payload !== null && typeof payload === "object" &&
+        "video_inference_ready" in payload && payload.video_inference_ready === true;
+      setServiceStatus(ready ? "ready" : "not_ready");
+    } catch {
+      setServiceStatus("offline");
+    }
+  }, []);
+
   const logEvent = useCallback((event: EventName, details?: InteractionEvent["details"]) => {
     if (!consent) return;
     setEvents((current) => [...current, { event, at: new Date().toISOString(), ...(details ? { details } : {}) }]);
@@ -73,6 +99,12 @@ function App() {
       void cameraRef.current.play().catch(() => undefined);
     }
   }, [cameraOn]);
+
+  useEffect(() => {
+    void checkService();
+    const interval = window.setInterval(() => void checkService(), 30000);
+    return () => window.clearInterval(interval);
+  }, [checkService]);
 
   useEffect(() => {
     if (!videoFile) {
@@ -94,6 +126,18 @@ function App() {
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     setCameraOn(false);
+  };
+
+  const chooseCaptureMode = (mode: CaptureMode) => {
+    if (mode === captureMode || videoFile || status === "recording" || status === "processing") return;
+    if (streamRef.current) stopCamera();
+    setCaptureMode(mode);
+    setPrediction(null);
+    setDraftText("");
+    setBrowserElapsedMs(null);
+    setError("");
+    setCameraError("");
+    setStatus("ready");
   };
 
   const startCamera = async () => {
@@ -163,6 +207,7 @@ function App() {
     }
     setError("");
     setCameraError("");
+    setCaptureMode("upload");
     setPrediction(null);
     setBrowserElapsedMs(null);
     setDraftText("");
@@ -218,6 +263,7 @@ function App() {
   };
 
   const clearAll = () => {
+    stopCamera();
     setHistory((current) => [...current, confirmedText]);
     setConfirmedText("");
     setDraftText("");
@@ -261,12 +307,28 @@ function App() {
   };
 
   const editConfirmed = (value: string) => {
-    setHistory((current) => [...current, confirmedText]);
     setConfirmedText(value);
     logEvent("text_modified", { characters: value.length });
   };
 
+  const removeConfirmedPhrase = (phraseIndex: number) => {
+    const phrases = confirmedText.split(/\n+/).filter((phrase) => phrase.trim());
+    if (phraseIndex < 0 || phraseIndex >= phrases.length) return;
+    phrases.splice(phraseIndex, 1);
+    setHistory((current) => [...current, confirmedText]);
+    const nextText = phrases.join("\n");
+    setConfirmedText(nextText);
+    logEvent("text_modified", { characters: nextText.length });
+  };
+
   const downloadName = videoFile?.name ?? "No video selected";
+  const confirmedPhrases = confirmedText.split(/\n+/).filter((phrase) => phrase.trim());
+  const activeStep = prediction ? 3 : status === "recording" || !videoFile || confirmedText ? 1 : 2;
+  const workflowSteps = [
+    { number: 1, title: "Add a clip", detail: "Record or upload", complete: Boolean(videoFile || prediction || confirmedText) },
+    { number: 2, title: "Recognize", detail: "Create a text draft", complete: Boolean(prediction || confirmedText) },
+    { number: 3, title: "Review and keep", detail: "Edit, then confirm", complete: Boolean(confirmedText) },
+  ];
 
   return (
     <main className="app-shell">
@@ -276,8 +338,11 @@ function App() {
           <span>FSboard</span>
         </a>
         <div className="topbar-right">
-          <span className="model-pill"><span className="live-dot" />BiGRU + CTC · 126D</span>
-          <a className="quiet-link" href={`${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}/health`} target="_blank" rel="noreferrer">Service status</a>
+          <span className="model-pill">BiGRU + CTC <i /> 126D</span>
+          <button className={`service-pill service-${serviceStatus}`} type="button" onClick={() => void checkService()} title="Check the local recognition service" aria-live="polite">
+            <i />{serviceStatusCopy[serviceStatus]}
+          </button>
+          <a className="quiet-link" href={`${API_BASE_URL}/health`} target="_blank" rel="noreferrer">Details</a>
         </div>
       </header>
 
@@ -289,12 +354,30 @@ function App() {
         <p className="intro-copy">Record or choose a short clip. Review the model’s draft, make it yours, then add the text you approve.</p>
       </section>
 
+      <nav className="workflow-steps" aria-label="Recognition workflow">
+        {workflowSteps.map((step) => {
+          const current = activeStep === step.number;
+          return (
+            <div key={step.number} className={`workflow-step ${current ? "is-current" : ""} ${step.complete ? "is-complete" : ""}`} aria-current={current ? "step" : undefined}>
+              <span className="workflow-number">{step.complete ? "✓" : step.number}</span>
+              <span className="workflow-copy"><strong>{step.title}</strong><small>{step.detail}</small></span>
+            </div>
+          );
+        })}
+      </nav>
+
       <section className="workbench" aria-label="Recognition workspace">
         <div className="capture-column">
           <div className="section-heading">
             <div><span className="step-index">01</span><h2>Your video</h2></div>
             <span className={`status-label status-${status}`} aria-live="polite">{statusCopy[status]}</span>
           </div>
+
+          <div className="capture-mode-switch" role="group" aria-label="Choose a video input method">
+            <button className={captureMode === "camera" ? "is-selected" : ""} type="button" aria-pressed={captureMode === "camera"} onClick={() => chooseCaptureMode("camera")} disabled={status === "recording" || status === "processing" || Boolean(videoFile && captureMode !== "camera")}>Record with camera</button>
+            <button className={captureMode === "upload" ? "is-selected" : ""} type="button" aria-pressed={captureMode === "upload"} onClick={() => chooseCaptureMode("upload")} disabled={status === "recording" || status === "processing" || Boolean(videoFile && captureMode !== "upload")}>Upload a clip</button>
+          </div>
+          {videoFile && <p className="capture-mode-note">Remove the current clip below to switch input methods.</p>}
 
           <div className={`preview-frame ${cameraOn && !videoFile ? "preview-camera" : ""}`}>
             {videoFile && previewUrl ? (
@@ -318,20 +401,24 @@ function App() {
           </div>
 
           <div className="capture-actions">
-            {!cameraOn ? (
-              <button className="button button-secondary" type="button" onClick={() => void startCamera()}>Start camera</button>
-            ) : status === "recording" ? (
-              <button className="button button-recording" type="button" onClick={stopRecording}>Stop recording</button>
+            {captureMode === "camera" ? (
+              !cameraOn ? (
+                <button className="button button-primary" type="button" onClick={() => void startCamera()}>Open camera</button>
+              ) : status === "recording" ? (
+                <button className="button button-recording" type="button" onClick={stopRecording}>Stop recording</button>
+              ) : (
+                <>
+                  <button className="button button-primary" type="button" onClick={startRecording}>Start recording</button>
+                  <button className="text-button" type="button" onClick={stopCamera}>Close camera</button>
+                </>
+              )
             ) : (
-              <>
-                <button className="button button-secondary" type="button" onClick={startRecording}>Start recording</button>
-                <button className="text-button" type="button" onClick={stopCamera}>Stop camera</button>
-              </>
+              <label className="button button-primary upload-button">
+                {videoFile ? "Choose another clip" : "Choose video file"}
+                <input type="file" accept="video/mp4,video/webm,.mp4,.webm" onChange={(event) => { selectFile(event.currentTarget.files?.[0]); event.currentTarget.value = ""; }} aria-label="Upload MP4 or WebM video" />
+              </label>
             )}
-            <label className="button button-quiet upload-button">
-              Upload video
-              <input type="file" accept="video/mp4,video/webm,.mp4,.webm" onChange={(event) => selectFile(event.currentTarget.files?.[0])} aria-label="Upload MP4 or WebM video" />
-            </label>
+            {captureMode === "camera" && <span className="capture-hint">Camera opens only when you choose.</span>}
           </div>
           {cameraError && <p className="inline-error" role="alert">{cameraError}</p>}
 
@@ -347,7 +434,7 @@ function App() {
         </div>
 
         <aside className="guide-column" aria-label="Recording guide">
-          <div className="guide-title"><span className="step-index">02</span><h2>A clear sign helps</h2></div>
+          <div className="guide-title"><h2>A clear clip helps</h2></div>
           <div className="guide-illustration"><LandmarkMark /><span className="guide-ring ring-one" /><span className="guide-ring ring-two" /></div>
           <ul className="guide-list">
             <li><span className="guide-check">01</span><span>Frame one signing hand from wrist to fingertips.</span></li>
@@ -395,12 +482,21 @@ function App() {
 
           <div className="confirmed-panel">
             <div className="panel-heading"><div><span className="panel-kicker">Your approved text</span><h3>Final text</h3></div><span className="confirmed-count">{confirmedText.length} characters</span></div>
+            {confirmedPhrases.length > 0 && (
+              <div className="phrase-chips" aria-label="Confirmed phrases">
+                {confirmedPhrases.map((phrase, index) => (
+                  <button className="phrase-chip" key={`${index}-${phrase}`} type="button" onClick={() => removeConfirmedPhrase(index)} aria-label={`Remove phrase: ${phrase}`} title="Remove this phrase">
+                    <span>{phrase}</span><i aria-hidden="true">×</i>
+                  </button>
+                ))}
+              </div>
+            )}
             <label className="sr-only" htmlFor="confirmed-text">Edit final text</label>
             <textarea id="confirmed-text" value={confirmedText} onChange={(event) => editConfirmed(event.currentTarget.value)} placeholder="Confirmed phrases collect here. You can still edit this text." />
             <div className="confirmed-actions">
               <button className="text-button" type="button" onClick={() => void copyText()} disabled={!confirmedText}>Copy text</button>
               <span aria-live="polite">{copyMessage}</span>
-              <button className="text-button" type="button" onClick={undo} disabled={!history.length}>Undo</button>
+              <button className="text-button" type="button" onClick={undo} disabled={!history.length} title="Undo the last confirmed phrase or clear action">Undo</button>
               <button className="text-button text-danger" type="button" onClick={clearAll} disabled={!confirmedText && !draftText && !videoFile}>Clear</button>
             </div>
           </div>
