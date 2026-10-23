@@ -1,0 +1,16 @@
+{
+  "sample_count": 12515,
+  "cer": 0.10100635305616391,
+  "wer": 0.5578217163745119,
+  "exact_match": 0.3403915301638034,
+  "char_edits": 22322,
+  "reference_characters": 220996,
+  "char_substitutions": 6196,
+  "char_deletions": 11575,
+  "char_insertions": 4551,
+  "word_edits": 13429,
+  "reference_words": 24074,
+  "word_substitutions": 9939,
+  "word_deletions": 2678,
+  "word_insertions": 812
+}

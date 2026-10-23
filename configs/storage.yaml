@@ -1,0 +1,26 @@
+# Drive is the primary source for large data and archived results. Keep the
+# Windows inference checkpoint local for FastAPI. Paths can be overridden by
+# the FSBOARD_* environment variables documented in docs/GOOGLE_DRIVE_STORAGE.md.
+storage:
+  drive:
+    root: null
+    root_env: FSBOARD_DRIVE_ROOT
+    mount_point: /content/drive
+    folder_name: TTNM_Fingerspelling
+    datasets_dir: datasets/FSboard
+    checkpoints_dir: checkpoints
+    experiments_dir: experiments
+    evaluation_dir: evaluation
+    test_npz_name: fsboard_test_proc_clean.npz
+    test_npz_member: fsboard_test_proc_clean.npz
+    source_archive_name: fingerspelling_fsboard_proc_clean.zip
+    source_archive_path: null
+    source_archive_file_id: 1dhcrbZeb3-5IshIkzatVmNO3MOTVFjJW
+    motion_checkpoint_name: bigru_ctc_motion_best.pt
+  local:
+    motion_checkpoint: checkpoints/bigru_ctc_motion_best.pt
+    windows_subset_dir: data/windows_subset
+    test_npz: null
+    evaluation_dir: results/recomputed
+    experiments_dir: results/experiments
+    colab_cache_root: /content/fsboard_cache

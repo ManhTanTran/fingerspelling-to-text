@@ -1,0 +1,3 @@
+﻿model,validation_CER_percent,test_CER_percent,test_WER_percent,test_exact_match_percent
+Hand-only (63D),10.95,10.41,57.13,33.1
+Hand + motion (126D),10.2,10.1,55.78,34.04

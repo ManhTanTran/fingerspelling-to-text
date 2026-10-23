@@ -1,0 +1,55 @@
+{
+  "project": "Task 3 - Continuous Fingerspelling Recognition",
+  "day": 7,
+  "status": "Research decision drafted",
+  "selected_baseline": "BiGRU + CTC with hand and motion features",
+  "comparison": {
+    "hand_only": {
+      "input_dimension": 63,
+      "validation_CER_percent": 10.95,
+      "test_CER_percent": 10.41,
+      "test_WER_percent": 57.13,
+      "test_exact_match_percent": 33.1
+    },
+    "hand_plus_motion": {
+      "input_dimension": 126,
+      "validation_CER_percent": 10.2,
+      "test_CER_percent": 10.1,
+      "test_WER_percent": 55.78,
+      "test_exact_match_percent": 34.04
+    }
+  },
+  "day6_error_analysis": {
+    "hand_only": {
+      "S": 6063,
+      "D": 12945,
+      "I": 3994
+    },
+    "hand_plus_motion": {
+      "S": 6196,
+      "D": 11575,
+      "I": 4551
+    },
+    "interpretation": "The motion features reduce deletions but increase substitutions and insertions slightly. Deletion remains the largest error type."
+  },
+  "runtime": {
+    "device": "NVIDIA Tesla T4",
+    "model_forward_ms_per_batch_16_mean": 15.72,
+    "model_forward_ms_per_batch_16_p50": 15.53,
+    "model_forward_ms_per_batch_16_p95": 19.71,
+    "cpu_feature_preprocessing_ms_per_clip": 0.232,
+    "caveat": "Not end-to-end latency. Video decoding, MediaPipe extraction, greedy CTC decoding and UI operations were not included."
+  },
+  "next_steps": [
+    "Retain hand-only as the controlled baseline and hand-plus-motion as the preferred model.",
+    "Investigate deletion errors, spaces, digits, punctuation and short phrases.",
+    "For the web prototype, use the exact landmark schema and normalization expected by the selected checkpoint.",
+    "Validate the full video-to-landmark pipeline before claiming real-time performance.",
+    "Keep future model improvements separate from the current measured results."
+  ],
+  "limitations": [
+    "The measured improvement in test CER is 0.31 percentage points and has not been tested for statistical significance.",
+    "Runtime measurements are not end-to-end.",
+    "Results apply to the evaluated FSboard split and do not prove generalization to arbitrary webcam videos."
+  ]
+}

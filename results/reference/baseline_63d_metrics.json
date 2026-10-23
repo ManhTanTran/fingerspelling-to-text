@@ -1,0 +1,19 @@
+{
+  "checkpoint": "/kaggle/working/bigru_ctc_full_best.pt",
+  "checkpoint_epoch": 3,
+  "n_test": 12515,
+  "character_error_rate": 0.10408333182501041,
+  "word_error_rate": 0.5713217579131012,
+  "exact_match_accuracy": 0.3309628445864962,
+  "empty_prediction_rate": 0.0,
+  "argmax_nonblank_frame_rate": 0.15693577630751465,
+  "test_data_stats": {
+    "total": 12521,
+    "missing_hand": 6,
+    "empty_pose": 0,
+    "invalid_pose": 0,
+    "empty_label": 0,
+    "unknown_character_labels": 0
+  },
+  "note": "CER/WER use greedy CTC decoding; test was evaluated after model selection on validation. Keep test results separate from tuning."
+}

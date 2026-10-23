@@ -1,0 +1,54 @@
+{
+  "overall_metrics": {
+    "Hand-only (63D)": {
+      "n_samples": 12515,
+      "reference_characters": 220996,
+      "reference_words": 24074,
+      "S": 6063,
+      "D": 12945,
+      "I": 3994,
+      "character_edits": 23002,
+      "CER": 0.10408333182501041,
+      "word_edits": 13754,
+      "WER": 0.5713217579131012,
+      "exact_match_accuracy": 0.3309628445864962,
+      "space_related_edits": 4587,
+      "digit_related_edits": 4171,
+      "punctuation_related_edits": 3343
+    },
+    "Hand + motion (126D)": {
+      "n_samples": 12515,
+      "reference_characters": 220996,
+      "reference_words": 24074,
+      "S": 6196,
+      "D": 11575,
+      "I": 4551,
+      "character_edits": 22322,
+      "CER": 0.10100635305616391,
+      "word_edits": 13429,
+      "WER": 0.5578217163745119,
+      "exact_match_accuracy": 0.3403915301638034,
+      "space_related_edits": 4434,
+      "digit_related_edits": 4078,
+      "punctuation_related_edits": 2965
+    }
+  },
+  "runtime": {
+    "device": "cuda",
+    "gpu": "Tesla T4",
+    "measured_batches": 50,
+    "batch_size_nominal": 16,
+    "feature_preprocessing_ms_per_clip_cpu_sample": 0.2324014750047354,
+    "model_forward_ms_per_batch_mean": 15.721755660051713,
+    "model_forward_ms_per_batch_p50": 15.529891000369389,
+    "model_forward_ms_per_batch_p95": 19.707068600473576,
+    "model_forward_ms_per_clip_approx": 0.982609728753232,
+    "scope_note": "Inference timing includes CPU-to-device transfer and BiGRU forward. Feature preprocessing was timed separately. Does not include video decoding, MediaPipe landmark extraction, network, UI, or CTC text decoding."
+  },
+  "notes": [
+    "CER is total character edit distance divided by total reference characters.",
+    "S/D/I come from a minimum-edit alignment; ties are resolved deterministically.",
+    "Phrase-characteristic groups overlap; do not sum those group counts.",
+    "Latency excludes video decode and MediaPipe; do not call it end-to-end latency."
+  ]
+}

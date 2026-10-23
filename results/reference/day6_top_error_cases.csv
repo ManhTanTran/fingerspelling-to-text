@@ -1,0 +1,101 @@
+﻿model,sample_index,reference,prediction,phrase_length,length_bin,char_edits,S,D,I,word_edits,ref_chars,ref_words,exact_match,space_edits,digit_edits,punctuation_edits,contains_space,contains_digit,contains_punctuation,has_adjacent_repeat
+Hand + motion (126D),1778,professormgr/dragonsupertkd,profesormgudragonskertkorpplrofesorlmgr/dragponsker-k,27,21-30,32,2,2,28,1,27,1,0,0,0,1,False,False,True,True
+Hand-only (63D),8155,zoo_bear,z000./z0o0-bear,8,<=10,9,2,0,7,1,8,1,0,0,5,3,False,False,True,True
+Hand + motion (126D),8155,zoo_bear,z000./z00-bear,8,<=10,9,3,0,6,1,8,1,0,0,5,3,False,False,True,True
+Hand-only (63D),7650,newportindiantakeaway.ie,ewportindiantakeawyim newport indiantakeawyim,24,21-30,26,3,1,22,3,24,1,0,2,0,1,False,False,True,False
+Hand-only (63D),1765,5501 bia 9137,501ba 91370r 501 bi 913,13,11-20,14,0,2,12,5,13,3,0,2,8,0,True,True,False,True
+Hand + motion (126D),8399,+233-650-99-8121,+332233-650-99-818233-650-99-8121,16,11-20,17,0,0,17,1,16,1,0,0,14,3,False,True,True,True
+Hand-only (63D),9787,+90-677-53-28-81-76-99,f tt,22,21-30,22,4,18,0,2,22,1,0,1,15,7,False,True,True,True
+Hand-only (63D),3511,+95-542-175-5408-984,t ,20,11-20,20,2,18,0,1,20,1,0,1,15,5,False,True,True,False
+Hand-only (63D),8399,+233-650-99-8121,+32233-650-99-18233-650-99-811,16,11-20,16,2,0,14,1,16,1,0,0,13,3,False,True,True,True
+Hand-only (63D),3508,+683-1309-9352,piv,14,11-20,14,3,11,0,1,14,1,0,0,11,3,False,True,True,False
+Hand + motion (126D),1765,5501 bia 9137,5019137r 501l b 13,13,11-20,13,6,1,6,4,13,3,0,1,10,0,True,True,False,True
+Hand + motion (126D),7327,75 257th west,552-75257752577-56est,13,11-20,13,5,0,8,3,13,3,0,2,11,2,True,True,False,False
+Hand + motion (126D),2071,stephan love,,12,11-20,12,0,12,0,2,12,2,0,1,0,0,True,False,False,False
+Hand-only (63D),8480,1514 savara,1514 avare1514 savare,11,11-20,11,1,0,10,2,11,2,0,1,4,0,True,True,False,False
+Hand + motion (126D),8505,2685 7031,26857032-26857031,9,<=10,9,1,0,8,2,9,2,0,1,8,1,True,True,False,False
+Hand-only (63D),1778,professormgr/dragonsupertkd,prfesorg/drgonsertolplrofesorlmgr/dragonsertk,27,21-30,26,2,3,21,1,27,1,0,0,0,1,False,False,True,True
+Hand + motion (126D),1814,www.maplus.cz/lluisabadias,w.maplus.cz/il-luisabadisww.maplus.cz/luisabadias,26,21-30,25,0,1,24,1,26,1,0,0,0,4,False,False,True,True
+Hand + motion (126D),8180,adn979.com/1-7538-03/riju,adnf79.com/17538-03/riadn979.com/1-75538-03/riiu,25,21-30,24,1,0,23,1,25,1,0,0,10,4,False,True,True,False
+Hand + motion (126D),9787,+90-677-53-28-81-76-99,s9 he ,22,21-30,21,5,16,0,2,22,1,0,2,14,7,False,True,True,True
+Hand-only (63D),8686,+66-747-3345-34-3379,+66-747-3345-34-339666-747-3345-34-3379,20,11-20,19,0,0,19,1,20,1,0,0,15,4,False,True,True,True
+Hand + motion (126D),8686,+66-747-3345-34-3379,+6-747-3345-34-339666-747-3345-324-3379,20,11-20,19,0,0,19,1,20,1,0,0,15,4,False,True,True,True
+Hand + motion (126D),7914,+62-3955-6439-85,+62-3955-6839856293955-6343985,16,11-20,15,1,0,14,1,16,1,0,0,15,0,False,True,True,True
+Hand-only (63D),3515,5736 redbud hwy,55,15,11-20,14,1,13,0,3,15,3,0,2,4,0,True,True,False,False
+Hand-only (63D),8454,6204 coquihalla,6204 coquihala6204 coquihalla,15,11-20,14,0,0,14,1,15,2,0,1,4,0,True,True,False,True
+Hand + motion (126D),3515,5736 redbud hwy,5,15,11-20,14,0,14,0,3,15,3,0,2,3,0,True,True,False,False
+Hand-only (63D),10970,alec dominguez,alec dominggueale domingrez,14,11-20,13,0,0,13,2,14,2,0,1,0,0,True,False,False,False
+Hand + motion (126D),7650,newportindiantakeaway.ie,ewportindiantaea.i newport indiantakeawy.im,24,21-30,22,1,1,20,3,24,1,0,2,0,1,False,False,True,False
+Hand-only (63D),7000,380-679-1488,c  i-,12,11-20,11,4,7,0,2,12,1,0,2,10,1,False,True,True,True
+Hand + motion (126D),7000,380-679-1488,c 6i,12,11-20,11,3,8,0,2,12,1,0,1,9,2,False,True,True,True
+Hand + motion (126D),9694,212-148-8986,212-148-896212-148-8986,12,11-20,11,0,0,11,1,12,1,0,0,9,2,False,True,True,False
+Hand + motion (126D),9812,462-006-1975,7s99,12,11-20,11,3,8,0,1,12,1,0,0,10,2,False,True,True,True
+Hand-only (63D),6629,tori weaver,dacor ty w ev,11,11-20,10,8,0,2,4,11,2,0,4,0,0,True,False,False,False
+Hand + motion (126D),4549,/federacion,/federaion/federacion,11,11-20,10,0,0,10,1,11,1,0,0,0,1,False,False,True,False
+Hand + motion (126D),6629,tori weaver,keacoriiis v,11,11-20,10,5,2,3,2,11,2,0,2,0,0,True,False,False,False
+Hand + motion (126D),8480,1514 savara,1514 svare1514savare,11,11-20,10,1,0,9,1,11,2,0,0,4,0,True,True,False,False
+Hand-only (63D),8800,qspe.saqa.org.za/muscleclinicz,spesgaorga/mucleclincgspe-saqa.orga/musclecinic,30,21-30,27,2,4,21,1,30,1,0,0,0,3,False,False,True,False
+Hand + motion (126D),8800,qspe.saqa.org.za/muscleclinicz,spe.sqa.org.za/muscleclincspe.sqa.org.za/musclecinicz,30,21-30,27,0,2,25,1,30,1,0,0,0,4,False,False,True,False
+Hand-only (63D),3512,+227-50-583-7774-472,32330,20,11-20,18,3,15,0,1,20,1,0,0,13,5,False,True,True,True
+Hand + motion (126D),3512,+227-50-583-7774-472,22,20,11-20,18,0,18,0,1,20,1,0,0,13,5,False,True,True,True
+Hand-only (63D),7004,637832 spa,30,10,<=10,9,1,8,0,2,10,2,0,1,6,0,True,True,False,False
+Hand-only (63D),8505,2685 7031,2685703226857031,9,<=10,8,1,0,7,2,9,2,0,1,8,0,True,True,False,False
+Hand-only (63D),1814,www.maplus.cz/lluisabadias,wmaplscz/il-luisabadsgww.maplus.cz/luisabadia,26,21-30,23,0,2,21,1,26,1,0,0,0,2,False,False,True,True
+Hand-only (63D),7016,spellenbunker.nl/,spot,17,11-20,15,2,13,0,1,17,1,0,0,0,2,False,False,True,True
+Hand + motion (126D),7016,spellenbunker.nl/,spcog,17,11-20,15,3,12,0,1,17,1,0,0,0,2,False,False,True,True
+Hand-only (63D),8180,adn979.com/1-7538-03/riju,adnf79.com/1-7538-3/radn79.com/1-7538-03/rjiu,25,21-30,22,2,0,20,1,25,1,0,0,7,5,False,True,True,False
+Hand-only (63D),8412,vitaline/114_allbottom/,vitaline/114-allabvitaline/1114-allbottom/,23,21-30,20,1,0,19,1,23,1,0,0,4,3,False,True,True,True
+Hand + motion (126D),8454,6204 coquihalla,6204oquihalla6204oquihalla,15,11-20,13,2,0,11,2,15,2,0,1,4,0,True,True,False,True
+Hand + motion (126D),2202,www.mifarma.fr,60f. k,14,11-20,12,4,8,0,2,14,1,0,1,2,1,False,False,True,True
+Hand + motion (126D),3508,+683-1309-9352,92,14,11-20,12,0,12,0,1,14,1,0,0,9,3,False,True,True,False
+Hand + motion (126D),10970,alec dominguez,aledominguezalec dominguez,14,11-20,12,0,0,12,1,14,2,0,0,0,0,True,False,False,False
+Hand-only (63D),6659,7679 ranchview trail,ah 2806 kar,20,11-20,17,8,9,0,3,20,3,0,4,8,0,True,True,False,False
+Hand + motion (126D),3511,+95-542-175-5408-984,584,20,11-20,17,0,17,0,1,20,1,0,0,12,5,False,True,True,False
+Hand-only (63D),6564,justin newton,jultinnootnt me wwotn,13,11-20,11,3,0,8,3,13,2,0,1,0,0,True,False,False,False
+Hand + motion (126D),6564,justin newton,usinnoonte wwsco,13,11-20,11,6,1,4,2,13,2,0,2,0,0,True,False,False,False
+Hand + motion (126D),6682,megan anthony,hemmlgo ka r hon,13,11-20,11,6,1,4,4,13,2,0,4,0,0,True,False,False,False
+Hand-only (63D),7641,abel collier,e3 ge cal,12,11-20,10,7,3,0,3,12,2,0,1,1,0,True,False,False,True
+Hand-only (63D),9694,212-148-8986,12-148-896212-148-8986,12,11-20,10,0,0,10,1,12,1,0,0,8,2,False,True,True,False
+Hand-only (63D),9772,916-027-5055,818608c,12,11-20,10,5,5,0,1,12,1,0,0,9,2,False,True,True,True
+Hand-only (63D),9808,339-042-4637,44,12,11-20,10,0,10,0,1,12,1,0,0,8,2,False,True,True,True
+Hand + motion (126D),1833,212-570-0217,212-570-011212570-0217,12,11-20,10,0,0,10,1,12,1,0,0,9,1,False,True,True,False
+Hand + motion (126D),6683,vera sanders,20ynd,12,11-20,10,3,7,0,2,12,2,0,1,2,0,True,False,False,False
+Hand + motion (126D),9772,916-027-5055,1880,12,11-20,10,2,8,0,1,12,1,0,0,9,2,False,True,True,True
+Hand-only (63D),6537,www.bamf.de/common-problems/,w-bymotde,28,21-30,23,4,19,0,1,28,1,0,0,0,5,False,False,True,True
+Hand-only (63D),5062,www.tdpproperty.com.au,om-au,22,21-30,18,1,17,0,1,22,1,0,0,0,3,False,False,True,True
+Hand + motion (126D),5062,www.tdpproperty.com.au,om-au,22,21-30,18,1,17,0,1,22,1,0,0,0,3,False,False,True,True
+Hand-only (63D),4549,/federacion,/federain/federacion,11,11-20,9,0,0,9,1,11,1,0,0,0,1,False,False,True,False
+Hand-only (63D),6630,+91-977-102, 90,11,11-20,9,1,8,0,1,11,1,0,1,6,3,False,True,True,True
+Hand + motion (126D),6987,pearland tx,udte,11,11-20,9,2,7,0,2,11,2,0,1,0,0,True,False,False,False
+Hand + motion (126D),8401,+62-8433-08,+62-84330+62-8433-08,11,11-20,9,0,0,9,1,11,1,0,0,7,2,False,True,True,True
+Hand-only (63D),7914,+62-3955-6439-85,+239568985629395-6343985,16,11-20,13,1,2,10,1,16,1,0,0,12,2,False,True,True,True
+Hand-only (63D),6715,http://cn.hipav.com/tarre-best,kmnthyavtork/auta,30,21-30,24,11,13,0,1,30,1,0,0,0,7,False,False,True,True
+Hand-only (63D),7007,109265 stanphyl,75toatnh,15,11-20,12,5,7,0,2,15,2,0,1,5,0,True,True,False,False
+Hand + motion (126D),6546,matsue.mypl.net,meakassue rmeyin,15,11-20,12,7,2,3,2,15,1,0,1,0,2,False,False,True,False
+Hand + motion (126D),9003,6056 state f033,6056state55056state9033,15,11-20,12,2,1,9,3,15,3,0,2,6,0,True,True,False,True
+Hand-only (63D),1803,garland tx,grlodgrladt,10,<=10,8,1,3,4,2,10,2,0,1,0,0,True,False,False,False
+Hand-only (63D),5364,tia reeves,ersss,10,<=10,8,3,5,0,2,10,2,0,1,0,0,True,False,False,True
+Hand + motion (126D),1803,garland tx,grlandzgrlandt,10,<=10,8,0,2,6,2,10,2,0,1,0,0,True,False,False,False
+Hand + motion (126D),5364,tia reeves,e4 visss,10,<=10,8,6,2,0,2,10,2,0,0,1,0,True,False,False,True
+Hand + motion (126D),6524,yacht_dream/wwe-championship/,vahht drm,29,21-30,23,3,20,0,2,29,1,0,1,0,4,False,False,True,True
+Hand-only (63D),8780,m.aosite.com/gelatinous-cube,aosite.com/gelatios-cm.aosite.com/gelatinors-cube,28,21-30,22,1,0,21,1,28,1,0,0,0,3,False,False,True,False
+Hand + motion (126D),8780,m.aosite.com/gelatinous-cube,m.asit.com/gelainos-cbam.aoite.com/gelatinous-cube,28,21-30,22,0,0,22,1,28,1,0,0,0,4,False,False,True,False
+Hand + motion (126D),6549,a4-copier-paper-price.html/,-inortrir/,27,21-30,21,4,17,0,1,27,1,0,0,1,3,False,True,True,False
+Hand-only (63D),1822,fort wayne indiana,fort wayneind fort wayne indiana,18,11-20,14,0,0,14,2,18,3,0,2,0,0,True,False,False,False
+Hand + motion (126D),6710,vallejo california,vmyfor,18,11-20,14,2,12,0,2,18,2,0,1,0,0,True,False,False,True
+Hand + motion (126D),6448,/cok-guzel-bedeva-sikisler,cou-etbbdrt,26,21-30,20,5,15,0,1,26,1,0,0,0,5,False,False,True,False
+Hand-only (63D),6689,lori clements,oron ds,13,11-20,10,4,6,0,2,13,2,0,2,0,0,True,False,False,False
+Hand + motion (126D),6558,carson greene,ecdayurstotrone,13,11-20,10,4,2,4,2,13,2,0,1,0,0,True,False,False,True
+Hand + motion (126D),7597,/20.500.14001,+5-1014,13,11-20,10,4,6,0,1,13,1,0,0,7,3,False,True,True,True
+Hand + motion (126D),6715,http://cn.hipav.com/tarre-best,nthyav.or auzna,30,21-30,23,8,15,0,2,30,1,0,1,0,6,False,False,True,True
+Hand-only (63D),6556,terrell underwood,uuun porwo,17,11-20,13,6,7,0,2,17,2,0,0,0,0,True,False,False,True
+Hand-only (63D),6524,yacht_dream/wwe-championship/,v ahtdram/,29,21-30,22,3,19,0,2,29,1,0,1,0,3,False,False,True,True
+Hand-only (63D),1847,www.124.gov.cn/st-thomas,66.124.g02,24,21-30,18,4,14,0,1,24,1,0,0,4,3,False,True,True,True
+Hand-only (63D),6680,6386 poison creek cutoff,6lson mukrka,24,21-30,18,6,12,0,4,24,4,0,2,3,0,True,True,False,True
+Hand + motion (126D),1847,www.124.gov.cn/st-thomas,w.124.102,24,21-30,18,3,15,0,1,24,1,0,0,3,3,False,True,True,True
+Hand-only (63D),8701,8048 sinclair bluffs,8048 sinclirr8048 sinclir blrfs,20,11-20,15,2,1,12,3,20,3,0,1,4,0,True,True,False,True
+Hand-only (63D),9791,410929 birney street,treet,20,11-20,15,0,15,0,3,20,3,0,2,6,0,True,True,False,True
+Hand + motion (126D),9791,410929 birney street,treet,20,11-20,15,0,15,0,3,20,3,0,2,6,0,True,True,False,True
+Hand-only (63D),7001,476-615-0613,4643,12,11-20,9,1,8,0,1,12,1,0,0,7,2,False,True,True,False
+Hand-only (63D),8984,328-078-7010,328-078-0328-078-7010,12,11-20,9,0,0,9,1,12,1,0,0,7,2,False,True,True,False
+Hand-only (63D),9812,462-006-1975,629,12,11-20,9,0,9,0,1,12,1,0,0,7,2,False,True,True,True

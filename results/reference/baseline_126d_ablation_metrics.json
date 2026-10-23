@@ -1,0 +1,50 @@
+{
+  "baseline_hand_only": {
+    "features": "Hand-only (63D)",
+    "val_cer": 0.1095,
+    "test_cer": 0.1041,
+    "test_wer": 0.5713,
+    "test_exact_match": 0.331
+  },
+  "motion_ablation": {
+    "features": "Hand + motion (126D)",
+    "best_epoch": 3,
+    "val_cer": 0.10202501770120369,
+    "test_cer": 0.10100635305616391,
+    "test_wer": 0.5578217163745119,
+    "test_exact_match": 0.3403915301638034
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.9190407994322197,
+      "val_loss": 0.49990489164220986,
+      "val_cer": 0.13723389190464952,
+      "val_wer": 0.7426480142058989,
+      "val_exact_match": 0.18492294877134527
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.4843440184979216,
+      "val_loss": 0.4140524095378211,
+      "val_cer": 0.11382109983478876,
+      "val_wer": 0.6430334791459137,
+      "val_exact_match": 0.24614743856726365
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.410274683577998,
+      "val_loss": 0.374175707719099,
+      "val_cer": 0.10202501770120369,
+      "val_wer": 0.6019316557668154,
+      "val_exact_match": 0.27796751353602667
+    }
+  ],
+  "selection_rule": "Best epoch selected using validation CER",
+  "notes": [
+    "Both models use the same official FSboard split.",
+    "The existing baseline was initialized by subset warm-up before full-data training.",
+    "The motion ablation uses the same warm-up sample count, then three full-data epochs.",
+    "Test metrics are reported for comparison, not used for checkpoint selection."
+  ]
+}

@@ -1,0 +1,10 @@
+model:
+  name: bigru_ctc
+  input_dim: 126
+  hidden_size: 128
+  num_layers: 2
+  bidirectional: true
+  num_classes: 60
+  blank_index: 0
+checkpoint: checkpoints/bigru_ctc_motion_best.pt
+
