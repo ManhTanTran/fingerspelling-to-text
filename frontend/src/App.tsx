@@ -216,6 +216,15 @@ function App() {
     if (streamRef.current) stopCamera();
   };
 
+  const removeClip = () => {
+    setVideoFile(null);
+    setPrediction(null);
+    setDraftText("");
+    setBrowserElapsedMs(null);
+    setError("");
+    setStatus("ready");
+  };
+
   const runRecognition = async () => {
     if (!videoFile || status === "processing") return;
     setStatus("processing");
@@ -323,197 +332,202 @@ function App() {
 
   const downloadName = videoFile?.name ?? "No video selected";
   const confirmedPhrases = confirmedText.split(/\n+/).filter((phrase) => phrase.trim());
-  const activeStep = prediction ? 3 : status === "recording" || !videoFile || confirmedText ? 1 : 2;
+  const currentStep = prediction || confirmedText ? 2 : videoFile ? 1 : 0;
   const workflowSteps = [
-    { number: 1, title: "Add a clip", detail: "Record or upload", complete: Boolean(videoFile || prediction || confirmedText) },
-    { number: 2, title: "Recognize", detail: "Create a text draft", complete: Boolean(prediction || confirmedText) },
-    { number: 3, title: "Review and keep", detail: "Edit, then confirm", complete: Boolean(confirmedText) },
-  ];
+    { title: "Add a clip", detail: "Record or upload", complete: Boolean(videoFile || prediction || confirmedText) },
+    { title: "Create a draft", detail: "Run recognition", complete: Boolean(prediction || confirmedText) },
+    { title: "Review and confirm", detail: "Keep the text you approve", complete: Boolean(confirmedText) },
+  ].map((step, index) => ({ ...step, current: index === currentStep }));
 
   return (
-    <main className="app-shell">
-      <header className="topbar">
-        <a className="brand" href="#top" aria-label="FSboard home">
-          <span className="brand-mark" aria-hidden="true"><i /><i /><i /><i /></span>
-          <span>FSboard</span>
-        </a>
-        <div className="topbar-right">
-          <span className="model-pill">BiGRU + CTC <i /> 126D</span>
-          <button className={`service-pill service-${serviceStatus}`} type="button" onClick={() => void checkService()} title="Check the local recognition service" aria-live="polite">
-            <i />{serviceStatusCopy[serviceStatus]}
-          </button>
-          <a className="quiet-link" href={`${API_BASE_URL}/health`} target="_blank" rel="noreferrer">Details</a>
-        </div>
-      </header>
+    <main className="app-frame">
+      <div className="app-shell" id="top">
+        <header className="topbar">
+          <a className="brand" href="#top" aria-label="FSboard home">
+            <span className="brand-mark" aria-hidden="true"><i /><i /><i /><i /></span>
+            <span>FSboard</span>
+          </a>
+          <div className="topbar-right">
+            <span className="model-pill">BiGRU + CTC <span>126D</span></span>
+            <button className={`service-pill service-${serviceStatus}`} type="button" onClick={() => void checkService()} title="Check the local recognition service" aria-live="polite">
+              <i />{serviceStatusCopy[serviceStatus]}
+            </button>
+            <a className="quiet-link" href={`${API_BASE_URL}/health`} target="_blank" rel="noreferrer">Service details</a>
+          </div>
+        </header>
 
-      <section className="intro" id="top">
-        <div>
-          <p className="eyebrow">Fingerspelling, at your pace</p>
-          <h1>Make a sign.<br /><em>Shape the words.</em></h1>
-        </div>
-        <p className="intro-copy">Record or choose a short clip. Review the model’s draft, make it yours, then add the text you approve.</p>
-      </section>
+        <section className="page-heading" aria-labelledby="page-title">
+          <div>
+            <h1 id="page-title">Fingerspelling to text</h1>
+            <p>Add a short clip, review the model draft, then confirm the text you want to keep.</p>
+          </div>
+          <span className={`page-state status-${status}`} aria-live="polite">{statusCopy[status]}</span>
+        </section>
 
-      <nav className="workflow-steps" aria-label="Recognition workflow">
-        {workflowSteps.map((step) => {
-          const current = activeStep === step.number;
-          return (
-            <div key={step.number} className={`workflow-step ${current ? "is-current" : ""} ${step.complete ? "is-complete" : ""}`} aria-current={current ? "step" : undefined}>
-              <span className="workflow-number">{step.complete ? "✓" : step.number}</span>
+        <nav className="workflow-steps" aria-label="Recognition workflow">
+          {workflowSteps.map((step) => (
+            <div key={step.title} className={`workflow-step ${step.current ? "is-current" : ""} ${step.complete ? "is-complete" : ""}`} aria-current={step.current ? "step" : undefined}>
+              <span className="workflow-mark" aria-hidden="true" />
               <span className="workflow-copy"><strong>{step.title}</strong><small>{step.detail}</small></span>
             </div>
-          );
-        })}
-      </nav>
+          ))}
+        </nav>
 
-      <section className="workbench" aria-label="Recognition workspace">
-        <div className="capture-column">
-          <div className="section-heading">
-            <div><span className="step-index">01</span><h2>Your video</h2></div>
-            <span className={`status-label status-${status}`} aria-live="polite">{statusCopy[status]}</span>
-          </div>
+        <section className="workbench" aria-label="Recognition workspace">
+          <div className="capture-column">
+            <div className="section-heading">
+              <h2>Your clip</h2>
+              {status === "recording" && <span className="recording-label"><i />Recording</span>}
+            </div>
 
-          <div className="capture-mode-switch" role="group" aria-label="Choose a video input method">
-            <button className={captureMode === "camera" ? "is-selected" : ""} type="button" aria-pressed={captureMode === "camera"} onClick={() => chooseCaptureMode("camera")} disabled={status === "recording" || status === "processing" || Boolean(videoFile && captureMode !== "camera")}>Record with camera</button>
-            <button className={captureMode === "upload" ? "is-selected" : ""} type="button" aria-pressed={captureMode === "upload"} onClick={() => chooseCaptureMode("upload")} disabled={status === "recording" || status === "processing" || Boolean(videoFile && captureMode !== "upload")}>Upload a clip</button>
-          </div>
-          {videoFile && <p className="capture-mode-note">Remove the current clip below to switch input methods.</p>}
+            <div className="capture-mode-switch" role="group" aria-label="Choose a video input method">
+              <button className={captureMode === "camera" ? "is-selected" : ""} type="button" aria-pressed={captureMode === "camera"} onClick={() => chooseCaptureMode("camera")} disabled={status === "recording" || status === "processing" || Boolean(videoFile && captureMode !== "camera")}>Record with camera</button>
+              <button className={captureMode === "upload" ? "is-selected" : ""} type="button" aria-pressed={captureMode === "upload"} onClick={() => chooseCaptureMode("upload")} disabled={status === "recording" || status === "processing" || Boolean(videoFile && captureMode !== "upload")}>Upload a clip</button>
+            </div>
+            {videoFile && <p className="capture-mode-note">Remove the current clip to switch input methods.</p>}
 
-          <div className={`preview-frame ${cameraOn && !videoFile ? "preview-camera" : ""}`}>
-            {videoFile && previewUrl ? (
-              <video key={previewUrl} className="selected-video" src={previewUrl} controls playsInline />
-            ) : cameraOn ? (
-              <video ref={cameraRef} className="camera-video" autoPlay muted playsInline aria-label="Camera preview" />
-            ) : (
-              <div className="empty-preview">
-                <div className="landmark-disc"><LandmarkMark /></div>
-                <p>Keep one hand in frame</p>
-                <span>Clear light · steady pace · uncluttered background</span>
-              </div>
-            )}
-            {status === "processing" && <div className="processing-shade"><span className="spinner" /><span>Reading the movement</span></div>}
-            {status === "recording" && <span className="recording-indicator"><i /> Recording</span>}
-          </div>
-
-          <div className="file-row">
-            <span className="file-name" title={downloadName}>{downloadName}</span>
-            {videoFile && <button className="text-button" type="button" onClick={() => setVideoFile(null)}>Remove clip</button>}
-          </div>
-
-          <div className="capture-actions">
-            {captureMode === "camera" ? (
-              !cameraOn ? (
-                <button className="button button-primary" type="button" onClick={() => void startCamera()}>Open camera</button>
-              ) : status === "recording" ? (
-                <button className="button button-recording" type="button" onClick={stopRecording}>Stop recording</button>
+            <div className={`preview-frame ${cameraOn && !videoFile ? "preview-camera" : ""}`}>
+              {videoFile && previewUrl ? (
+                <video key={previewUrl} className="selected-video" src={previewUrl} controls playsInline />
+              ) : cameraOn ? (
+                <video ref={cameraRef} className="camera-video" autoPlay muted playsInline aria-label="Camera preview" />
               ) : (
-                <>
-                  <button className="button button-primary" type="button" onClick={startRecording}>Start recording</button>
-                  <button className="text-button" type="button" onClick={stopCamera}>Close camera</button>
-                </>
-              )
-            ) : (
-              <label className="button button-primary upload-button">
-                {videoFile ? "Choose another clip" : "Choose video file"}
-                <input type="file" accept="video/mp4,video/webm,.mp4,.webm" onChange={(event) => { selectFile(event.currentTarget.files?.[0]); event.currentTarget.value = ""; }} aria-label="Upload MP4 or WebM video" />
-              </label>
-            )}
-            {captureMode === "camera" && <span className="capture-hint">Camera opens only when you choose.</span>}
-          </div>
-          {cameraError && <p className="inline-error" role="alert">{cameraError}</p>}
-
-          <div className="clip-settings">
-            <label htmlFor="hand-side">Signing hand</label>
-            <select id="hand-side" value={hand} onChange={(event) => setHand(event.currentTarget.value as typeof hand)}>
-              <option value="auto">Choose automatically</option>
-              <option value="left">Left hand</option>
-              <option value="right">Right hand</option>
-            </select>
-            <span>MP4 or WebM · up to 100 MB · 120 seconds</span>
-          </div>
-        </div>
-
-        <aside className="guide-column" aria-label="Recording guide">
-          <div className="guide-title"><h2>A clear clip helps</h2></div>
-          <div className="guide-illustration"><LandmarkMark /><span className="guide-ring ring-one" /><span className="guide-ring ring-two" /></div>
-          <ul className="guide-list">
-            <li><span className="guide-check">01</span><span>Frame one signing hand from wrist to fingertips.</span></li>
-            <li><span className="guide-check">02</span><span>Keep the hand inside the frame as you spell.</span></li>
-            <li><span className="guide-check">03</span><span>Use a short, well-lit clip with a calm background.</span></li>
-          </ul>
-          <div className="recognition-note"><span className="note-symbol">i</span><p>This is an experimental recognizer. Check the draft before using it.</p></div>
-        </aside>
-      </section>
-
-      <section className="text-workspace" aria-label="Prediction and final text">
-        <div className="section-heading text-heading">
-          <div><span className="step-index">03</span><h2>Review and keep</h2></div>
-          <div className="hand-coverage" aria-label="AI output needs human review">AI draft <span>needs your review</span></div>
-        </div>
-        <div className="text-grid">
-          <div className="draft-panel">
-            <div className="panel-heading"><div><span className="panel-kicker">Model output</span><h3>Editable draft</h3></div>{prediction && <span className="model-chip">{prediction.model_version}</span>}</div>
-            {prediction ? (
-              <>
-                <p className="original-prediction">Prediction received: <q>{prediction.prediction || "(no characters decoded)"}</q></p>
-                <label className="sr-only" htmlFor="draft-text">Edit predicted text</label>
-                <textarea id="draft-text" value={draftText} onChange={(event) => editDraft(event.currentTarget.value)} placeholder="Edit the prediction before confirming" />
-                <div className="prediction-meta">
-                  <span>{prediction.input_frames} frames · {prediction.input_duration_seconds.toFixed(1)} s · {prediction.landmark_frames} hand frames · {(prediction.hand_detection_rate * 100).toFixed(0)}% detection</span>
-                  <span>{prediction.processing_time_ms.toFixed(0)} ms backend · {browserElapsedMs?.toFixed(0) ?? "—"} ms browser round trip · {prediction.device}</span>
+                <div className="empty-preview">
+                  <div className="landmark-disc"><LandmarkMark /></div>
+                  <div>
+                    <p>Keep one signing hand visible</p>
+                    <span>Frame the hand from wrist to fingertips in clear light.</span>
+                  </div>
                 </div>
-                <details className="timing-details">
-                  <summary>Processing timings</summary>
-                  <dl>{Object.entries(prediction.stage_timings_ms).map(([stage, milliseconds]) => <div key={stage}><dt>{stage.replaceAll("_", " ")}</dt><dd>{milliseconds.toFixed(1)} ms</dd></div>)}</dl>
-                </details>
-              </>
-            ) : (
-              <div className="draft-empty"><span className="draft-cursor">|</span><p>Your prediction will appear here for review.</p></div>
-            )}
-            {error && <p className="inline-error" role="alert">{error}</p>}
-            <div className="draft-actions">
-              <button className="button button-primary" type="button" onClick={() => void runRecognition()} disabled={!videoFile || status === "processing" || status === "recording"}>
-                {status === "processing" ? <><span className="button-spinner" /> Recognizing…</> : prediction || status === "error" ? "Retry recognition" : "Recognize video"}
-              </button>
-              <button className="button button-secondary" type="button" onClick={confirmDraft} disabled={!draftText.trim() || !prediction}>Confirm text</button>
+              )}
+              {status === "processing" && <div className="processing-shade"><span className="spinner" /><span>Reading the movement</span></div>}
+              {status === "recording" && <span className="recording-indicator"><i />Recording</span>}
             </div>
-            {prediction && <p className="coordinate-warning">Coordinate parity with the FSboard training data is not verified.</p>}
-          </div>
 
-          <div className="confirmed-panel">
-            <div className="panel-heading"><div><span className="panel-kicker">Your approved text</span><h3>Final text</h3></div><span className="confirmed-count">{confirmedText.length} characters</span></div>
-            {confirmedPhrases.length > 0 && (
-              <div className="phrase-chips" aria-label="Confirmed phrases">
-                {confirmedPhrases.map((phrase, index) => (
-                  <button className="phrase-chip" key={`${index}-${phrase}`} type="button" onClick={() => removeConfirmedPhrase(index)} aria-label={`Remove phrase: ${phrase}`} title="Remove this phrase">
-                    <span>{phrase}</span><i aria-hidden="true">×</i>
-                  </button>
-                ))}
+            <div className="file-row">
+              <span className="file-name" title={downloadName}>{downloadName}</span>
+              {videoFile && <button className="text-button" type="button" onClick={removeClip}>Remove clip</button>}
+            </div>
+
+            <div className="capture-actions">
+              {captureMode === "camera" ? (
+                !cameraOn ? (
+                  <button className="button button-primary" type="button" onClick={() => void startCamera()}>Open camera</button>
+                ) : status === "recording" ? (
+                  <button className="button button-primary" type="button" onClick={stopRecording}>Stop recording</button>
+                ) : (
+                  <>
+                    <button className="button button-primary" type="button" onClick={startRecording}>Start recording</button>
+                    <button className="button button-secondary" type="button" onClick={stopCamera}>Close camera</button>
+                  </>
+                )
+              ) : (
+                <label className="button button-primary upload-button">
+                  {videoFile ? "Choose another clip" : "Choose video file"}
+                  <input type="file" accept="video/mp4,video/webm,.mp4,.webm" onChange={(event) => { selectFile(event.currentTarget.files?.[0]); event.currentTarget.value = ""; }} aria-label="Upload MP4 or WebM video" />
+                </label>
+              )}
+              {captureMode === "camera" && <span className="capture-hint">Camera opens only when you choose.</span>}
+            </div>
+            {cameraError && <p className="inline-error" role="alert">{cameraError}</p>}
+
+            <div className="clip-settings">
+              <div className="hand-setting">
+                <label htmlFor="hand-side">Signing hand</label>
+                <select id="hand-side" value={hand} onChange={(event) => setHand(event.currentTarget.value as typeof hand)}>
+                  <option value="auto">Choose automatically</option>
+                  <option value="left">Left hand</option>
+                  <option value="right">Right hand</option>
+                </select>
               </div>
-            )}
-            <label className="sr-only" htmlFor="confirmed-text">Edit final text</label>
-            <textarea id="confirmed-text" value={confirmedText} onChange={(event) => editConfirmed(event.currentTarget.value)} placeholder="Confirmed phrases collect here. You can still edit this text." />
-            <div className="confirmed-actions">
-              <button className="text-button" type="button" onClick={() => void copyText()} disabled={!confirmedText}>Copy text</button>
-              <span aria-live="polite">{copyMessage}</span>
-              <button className="text-button" type="button" onClick={undo} disabled={!history.length} title="Undo the last confirmed phrase or clear action">Undo</button>
-              <button className="text-button text-danger" type="button" onClick={clearAll} disabled={!confirmedText && !draftText && !videoFile}>Clear</button>
+              <span className="format-note">MP4 or WebM · up to 100 MB · 120 seconds</span>
             </div>
           </div>
-        </div>
-      </section>
 
-      <footer className="privacy-footer">
-        <div>
-          <strong>Your clip stays temporary.</strong>
-          <span>The backend removes the uploaded video after processing. This page does not save video by default.</span>
-        </div>
-        <div className="event-consent">
-          <label><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.currentTarget.checked)} /> Allow a local interaction log</label>
-          <span>Only event names, times and character counts; never the video or text content.</span>
-          {consent && <button className="text-button" type="button" onClick={exportEvents} disabled={!events.length}>Download {events.length} events</button>}
-        </div>
-      </footer>
+          <section className="review-column" aria-label="Prediction and final text">
+            <div className="review-heading">
+              <div>
+                <h2>Review your text</h2>
+                <p>Model output stays editable until you confirm it.</p>
+              </div>
+              {prediction && <span className="review-status">Needs review</span>}
+            </div>
+
+            <div className="editor-block">
+              <section className="draft-panel" aria-labelledby="draft-heading">
+                <div className="panel-heading">
+                  <h3 id="draft-heading">Draft</h3>
+                  {prediction && <span className="model-chip">{prediction.model_version}</span>}
+                </div>
+                {prediction ? (
+                  <>
+                    <p className="original-prediction">Raw model output: <q>{prediction.prediction || "(no characters decoded)"}</q></p>
+                    <label className="sr-only" htmlFor="draft-text">Edit predicted text</label>
+                    <textarea id="draft-text" value={draftText} onChange={(event) => editDraft(event.currentTarget.value)} placeholder="Edit the prediction before confirming" />
+                    <div className="prediction-meta">
+                      <span>{prediction.input_frames} frames · {prediction.input_duration_seconds.toFixed(1)} s · {prediction.landmark_frames} hand frames · {(prediction.hand_detection_rate * 100).toFixed(0)}% detection</span>
+                      <span>{prediction.processing_time_ms.toFixed(0)} ms backend · {browserElapsedMs?.toFixed(0) ?? "—"} ms browser · {prediction.device}</span>
+                    </div>
+                    <details className="timing-details">
+                      <summary>Processing timings</summary>
+                      <dl>{Object.entries(prediction.stage_timings_ms).map(([stage, milliseconds]) => <div key={stage}><dt>{stage.replaceAll("_", " ")}</dt><dd>{milliseconds.toFixed(1)} ms</dd></div>)}</dl>
+                    </details>
+                  </>
+                ) : (
+                  <div className="draft-empty">
+                    <span className="empty-mark" aria-hidden="true" />
+                    <div><strong>No draft yet</strong><p>Add a clip and run recognition. You can edit the result before keeping it.</p></div>
+                  </div>
+                )}
+                {error && <p className="inline-error" role="alert">{error}</p>}
+                <div className="draft-actions">
+                  <button className="button button-primary" type="button" onClick={() => void runRecognition()} disabled={!videoFile || status === "processing" || status === "recording"}>
+                    {status === "processing" ? <><span className="button-spinner" /> Recognizing…</> : prediction || status === "error" ? "Retry recognition" : "Recognize video"}
+                  </button>
+                  <button className="button button-secondary" type="button" onClick={confirmDraft} disabled={!draftText.trim() || !prediction}>Confirm text</button>
+                </div>
+                {prediction && <p className="coordinate-warning">Feature compatibility with FSboard training data is not verified.</p>}
+              </section>
+
+              <section className="confirmed-panel" aria-labelledby="final-heading">
+                <div className="panel-heading">
+                  <div><h3 id="final-heading">Final text</h3><p>Text you have confirmed</p></div>
+                  <span className="confirmed-count">{confirmedText.length} characters</span>
+                </div>
+                {confirmedPhrases.length > 0 && (
+                  <div className="phrase-chips" aria-label="Confirmed phrases">
+                    {confirmedPhrases.map((phrase, index) => (
+                      <button className="phrase-chip" key={`${index}-${phrase}`} type="button" onClick={() => removeConfirmedPhrase(index)} aria-label={`Remove phrase: ${phrase}`} title="Remove this phrase">
+                        <span>{phrase}</span><i aria-hidden="true">×</i>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <label className="sr-only" htmlFor="confirmed-text">Edit final text</label>
+                <textarea id="confirmed-text" value={confirmedText} onChange={(event) => editConfirmed(event.currentTarget.value)} placeholder="Confirmed phrases appear here. You can still edit this text." />
+                <div className="confirmed-actions">
+                  <button className="text-button" type="button" onClick={() => void copyText()} disabled={!confirmedText}>Copy text</button>
+                  <span aria-live="polite">{copyMessage}</span>
+                  <button className="text-button" type="button" onClick={undo} disabled={!history.length} title="Undo the last confirmed phrase or clear action">Undo</button>
+                  <button className="text-button text-danger" type="button" onClick={clearAll} disabled={!confirmedText && !draftText && !videoFile}>Clear</button>
+                </div>
+              </section>
+            </div>
+          </section>
+        </section>
+
+        <footer className="privacy-footer">
+          <div className="privacy-copy">
+            <strong>Your clip stays temporary.</strong>
+            <span>The backend removes the uploaded video after processing. This page does not save video by default.</span>
+          </div>
+          <div className="event-consent">
+            <label><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.currentTarget.checked)} /> Allow a local interaction log</label>
+            <span>Only event names, times and character counts; never the video or text content.</span>
+            {consent && <button className="text-button" type="button" onClick={exportEvents} disabled={!events.length}>Download {events.length} events</button>}
+          </div>
+        </footer>
+      </div>
     </main>
   );
 }

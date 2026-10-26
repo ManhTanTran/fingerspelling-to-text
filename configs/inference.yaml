@@ -1,10 +1,11 @@
-# Candidate RGB inference settings. The coordinate adapter is not yet validated
-# against a shared FSboard sample; do not treat this configuration as benchmark parity.
+# Defaults for CLI and FastAPI. Resolution precedence is YAML, then FSBOARD_*
+# environment variables, then CLI arguments or explicit create_app parameters.
+# The adapter remains a candidate until compared with a matched FSboard sample.
 checkpoint: checkpoints/bigru_ctc_motion_best.pt
 hand_model: models/hand_landmarker.task
 device: auto
 max_duration_seconds: 120
 max_upload_bytes: 100000000
 max_pixels: 16777216
-coordinate_adapter: mediapipe_xy_to_pixels_preserve_z_candidate
+coordinate_adapter: pixel_xy_preserve_z
 

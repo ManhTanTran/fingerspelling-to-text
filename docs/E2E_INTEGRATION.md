@@ -21,21 +21,26 @@ FastAPI loads the trusted checkpoint once at startup and uses it for all request
 
 ## Windows development setup
 
-Use two PowerShell terminals from the repository root.
+Use two PowerShell terminals from the repository root. This Windows checkout has a Vietnamese path that MediaPipe's native loader cannot open reliably. Use an ASCII junction once, then launch Python from that alias so the settings loader preserves the ASCII asset path:
+
+```powershell
+$alias = "D:\Work\fsboard-p4"
+if (-not (Test-Path -LiteralPath $alias)) {
+    New-Item -ItemType Junction -Path $alias -Target "D:\Work\Tương tác người máy\fingerspelling-to-text"
+}
+Set-Location $alias
+```
 
 ### Terminal 1: API
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[video,api,dev]"
-$env:FSBOARD_CHECKPOINT = "checkpoints/bigru_ctc_motion_best.pt"
-$env:FSBOARD_HAND_MODEL = "models/hand_landmarker.task"
-$env:FSBOARD_COORDINATE_ADAPTER = "pixel_xy_preserve_z"
+python -m pip install ".[video,api,dev]"
 uvicorn --app-dir . backend.app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Keep the 126D checkpoint and MediaPipe `.task` file at those local paths, or set the environment variables to their locations. The model asset can be obtained from the official [MediaPipe Hand Landmarker Python guide](https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker/python). Visit `http://127.0.0.1:8000/health`; `video_inference_ready` should be `true` before submitting a clip.
+Keep the trusted 126D checkpoint at `checkpoints/bigru_ctc_motion_best.pt` and the MediaPipe asset at `models/hand_landmarker.task`, or point `FSBOARD_CHECKPOINT` and `FSBOARD_HAND_MODEL` at local copies. A regular install is used here because setuptools' editable install can fail to encode a Windows checkout path containing Vietnamese combining marks. Run the API from the ASCII junction so its YAML-relative paths and MediaPipe's native file access stay on the junction path. The model asset can be obtained from the official [MediaPipe Hand Landmarker Python guide](https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker/python). Visit `http://127.0.0.1:8000/health`; `video_inference_ready` should be `true` before submitting a clip.
 
 ### Terminal 2: browser app
 
@@ -50,6 +55,18 @@ Open the local URL printed by Vite (normally `http://127.0.0.1:5173`). `.env.loc
 
 The browser accepts MP4/WebM uploads. Webcam capture uses the first MP4/WebM format the browser supports and reports an actionable message when it cannot create one. The default request caps are 100 MB, 120 seconds, and 16,777,216 pixels per frame.
 
+## Inference configuration precedence
+
+Both the CLI and FastAPI read `configs/inference.yaml`. Relative checkpoint and model paths in the YAML and `FSBOARD_*` variables resolve from the repository root. Select another YAML file with `FSBOARD_INFERENCE_CONFIG`; per-setting environment overrides are `FSBOARD_CHECKPOINT`, `FSBOARD_HAND_MODEL`, `FSBOARD_DEVICE`, `FSBOARD_MAX_DURATION_SECONDS`, `FSBOARD_MAX_UPLOAD_BYTES`, `FSBOARD_MAX_PIXELS`, and `FSBOARD_COORDINATE_ADAPTER`.
+
+Settings resolve in this order, from lowest to highest priority:
+
+1. Built-in defaults, overridden by `configs/inference.yaml` (or the file selected by `FSBOARD_INFERENCE_CONFIG`).
+2. The corresponding `FSBOARD_*` environment variable.
+3. An explicit CLI option such as `--checkpoint`, or an explicit `create_app(...)` argument for embedded FastAPI use.
+
+The configured adapter must be one of `pixel_xy_preserve_z` or `normalized_xyz`; the old YAML alias `mediapipe_xy_to_pixels_preserve_z_candidate` was not accepted by the implementation and has been corrected. The default remains a candidate pending feature-parity evidence.
+
 ## CLI and HTTP interfaces
 
 From the repository root, the trusted local checkpoint is the default for the CLI:
@@ -58,7 +75,7 @@ From the repository root, the trusted local checkpoint is the default for the CL
 python scripts/predict_video.py --video path\to\sample.mp4
 ```
 
-Optional settings include `--checkpoint`, `--hand-model`, `--hand left|right`, `--device cpu|auto`, and `--coordinate-adapter pixel_xy_preserve_z|normalized_xyz`. The CLI prints JSON with the prediction, video metadata, coverage, model/device and stage timings. CLI and API call the same `VideoInferenceService`.
+Optional settings include `--checkpoint`, `--hand-model`, `--hand left|right`, `--device cpu|auto`, `--coordinate-adapter pixel_xy_preserve_z|normalized_xyz`, `--max-duration-seconds`, `--max-upload-bytes`, and `--max-pixels`. The CLI prints JSON with the prediction, video metadata, coverage, model/device and stage timings. CLI and API call the same `VideoInferenceService`.
 
 The API endpoints are `GET /health`, `GET /model-info`, and `POST /predict`. `/predict` expects multipart `file` and an optional `hand` value of `left` or `right`. Successful responses include `prediction`, `needs_review: null`, `processing_time_ms`, `model_forward`, `ctc_decode`, decode/tracking/feature stage timings, input metadata and a coordinate-compatibility warning. Error responses use `{ "status": "error", "message": "..." }`.
 

@@ -18,8 +18,8 @@ from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 from starlette.middleware.cors import CORSMiddleware
 
-from fingerspelling.features.coordinate_adapter import COORDINATE_ADAPTERS
 from fingerspelling.inference import Predictor, VideoInferenceService
+from fingerspelling.inference.settings import load_inference_settings
 from fingerspelling.video import video_to_features
 
 
@@ -70,38 +70,37 @@ def create_app(
     *,
     checkpoint_path: str | Path | None = None,
     hand_model_path: str | Path | None = None,
-    device: str = "auto",
-    max_duration_seconds: float = 120.0,
-    max_upload_bytes: int = 100_000_000,
-    max_pixels: int = 16_777_216,
+    device: str | None = None,
+    max_duration_seconds: float | None = None,
+    max_upload_bytes: int | None = None,
+    max_pixels: int | None = None,
     predictor: Any | None = None,
     video_processor: Callable[..., Any] = video_to_features,
     coordinate_adapter: str | None = None,
     cors_origins: Sequence[str] | None = None,
 ) -> FastAPI:
-    if max_duration_seconds <= 0 or max_upload_bytes <= 0 or max_pixels <= 0:
-        raise ValueError("upload and duration limits must be positive")
-    resolved_checkpoint = Path(
-        checkpoint_path
-        or os.environ.get("FSBOARD_CHECKPOINT", "checkpoints/bigru_ctc_motion_best.pt")
+    settings = load_inference_settings(
+        overrides={
+            "checkpoint": checkpoint_path,
+            "hand_model": hand_model_path,
+            "device": device,
+            "max_duration_seconds": max_duration_seconds,
+            "max_upload_bytes": max_upload_bytes,
+            "max_pixels": max_pixels,
+            "coordinate_adapter": coordinate_adapter,
+        }
     )
-    resolved_hand_model = Path(
-        hand_model_path
-        or os.environ.get("FSBOARD_HAND_MODEL", "models/hand_landmarker.task")
-    )
-    resolved_adapter = coordinate_adapter or os.environ.get(
-        "FSBOARD_COORDINATE_ADAPTER", "pixel_xy_preserve_z"
-    )
-    if resolved_adapter not in COORDINATE_ADAPTERS:
-        raise ValueError(f"FSBOARD_COORDINATE_ADAPTER must be one of {COORDINATE_ADAPTERS}")
+    resolved_checkpoint = settings.checkpoint
+    resolved_hand_model = settings.hand_model
+    resolved_adapter = settings.coordinate_adapter
     if predictor is not None:
         initial_service = VideoInferenceService(
             predictor,
             resolved_hand_model,
             coordinate_adapter=resolved_adapter,
-            max_duration_seconds=max_duration_seconds,
-            max_upload_bytes=max_upload_bytes,
-            max_pixels=max_pixels,
+            max_duration_seconds=settings.max_duration_seconds,
+            max_upload_bytes=settings.max_upload_bytes,
+            max_pixels=settings.max_pixels,
             video_processor=video_processor,
         )
     else:
@@ -110,14 +109,14 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         if app.state.service is None:
-            loaded = Predictor.from_checkpoint(resolved_checkpoint, device=device)
+            loaded = Predictor.from_checkpoint(resolved_checkpoint, device=settings.device)
             app.state.service = VideoInferenceService(
                 loaded,
                 resolved_hand_model,
                 coordinate_adapter=resolved_adapter,
-                max_duration_seconds=max_duration_seconds,
-                max_upload_bytes=max_upload_bytes,
-                max_pixels=max_pixels,
+                max_duration_seconds=settings.max_duration_seconds,
+                max_upload_bytes=settings.max_upload_bytes,
+                max_pixels=settings.max_pixels,
                 video_processor=video_processor,
             )
         yield
@@ -172,7 +171,7 @@ def create_app(
                 except ValueError:
                     return _json_error(400, "invalid Content-Length header")
                 # Permit multipart headers around the bounded video payload.
-                if declared > max_upload_bytes + 1_048_576:
+                if declared > settings.max_upload_bytes + 1_048_576:
                     return _json_error(413, "request exceeds the configured upload limit")
         return await call_next(request)
 

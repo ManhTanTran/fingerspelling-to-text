@@ -27,6 +27,28 @@ const predictionPayload = {
   note: "Experimental output.",
 };
 
+function makeFetchMock(
+  ...predictionResponses: Array<{
+    ok: boolean;
+    status: number;
+    json: () => Promise<unknown>;
+  }>
+) {
+  const responses = [...predictionResponses];
+  return vi.fn(async (input: RequestInfo | URL) => {
+    if (String(input).endsWith("/health")) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ status: "ok", video_inference_ready: true }),
+      } as Response;
+    }
+    const response = responses.shift();
+    if (!response) throw new Error("Unexpected request to the recognition service.");
+    return response as unknown as Response;
+  });
+}
+
 describe("FSboard review and confirmation flow", () => {
   beforeEach(() => {
     Object.defineProperty(URL, "createObjectURL", { configurable: true, value: vi.fn(() => "blob:sample") });
@@ -39,10 +61,11 @@ describe("FSboard review and confirmation flow", () => {
 
   it("keeps model draft separate until the user confirms, then supports undo and clear", async () => {
     const user = userEvent.setup();
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => predictionPayload });
+    const fetchMock = makeFetchMock({ ok: true, status: 200, json: async () => predictionPayload });
     vi.stubGlobal("fetch", fetchMock);
     render(<App />);
 
+    await user.click(screen.getByRole("button", { name: "Upload a clip" }));
     const file = new File(["video"], "signing-sample.mp4", { type: "video/mp4" });
     fireEvent.change(screen.getByLabelText("Upload MP4 or WebM video"), { target: { files: [file] } });
     await user.click(screen.getByRole("button", { name: "Recognize video" }));
@@ -51,8 +74,9 @@ describe("FSboard review and confirmation flow", () => {
     const draft = screen.getByRole("textbox", { name: "Edit predicted text" });
     expect(draft).toHaveValue("HELO WORLD");
     expect(screen.getByRole("textbox", { name: "Edit final text" })).toHaveValue("");
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0][0]).toBe("http://127.0.0.1:8000/predict");
+    const predictionCalls = fetchMock.mock.calls.filter(([url]) => String(url).endsWith("/predict"));
+    expect(predictionCalls).toHaveLength(1);
+    expect(predictionCalls[0][0]).toBe("http://127.0.0.1:8000/predict");
 
     await user.clear(draft);
     await user.type(draft, "HELLO WORLD");
@@ -69,12 +93,14 @@ describe("FSboard review and confirmation flow", () => {
 
   it("shows API errors and lets the user retry the selected clip", async () => {
     const user = userEvent.setup();
-    const fetchMock = vi.fn()
-      .mockResolvedValueOnce({ ok: false, status: 400, json: async () => ({ status: "error", message: "No hand landmarks were found." }) })
-      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => predictionPayload });
+    const fetchMock = makeFetchMock(
+      { ok: false, status: 400, json: async () => ({ status: "error", message: "No hand landmarks were found." }) },
+      { ok: true, status: 200, json: async () => predictionPayload },
+    );
     vi.stubGlobal("fetch", fetchMock);
     render(<App />);
 
+    await user.click(screen.getByRole("button", { name: "Upload a clip" }));
     fireEvent.change(screen.getByLabelText("Upload MP4 or WebM video"), {
       target: { files: [new File(["video"], "sample.webm", { type: "video/webm" })] },
     });
@@ -83,6 +109,6 @@ describe("FSboard review and confirmation flow", () => {
 
     await user.click(screen.getByRole("button", { name: "Retry recognition" }));
     await waitFor(() => expect(screen.getByRole("textbox", { name: "Edit predicted text" })).toHaveValue("HELO WORLD"));
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).endsWith("/predict"))).toHaveLength(2);
   });
 });
