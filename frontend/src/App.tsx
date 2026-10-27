@@ -69,7 +69,9 @@ function App() {
   const [events, setEvents] = useState<InteractionEvent[]>([]);
   const [copyMessage, setCopyMessage] = useState("");
   const [browserElapsedMs, setBrowserElapsedMs] = useState<number | null>(null);
+  const [alphabetGuideOpen, setAlphabetGuideOpen] = useState(false);
   const cameraRef = useRef<HTMLVideoElement>(null);
+  const alphabetDialogRef = useRef<HTMLDialogElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -320,6 +322,13 @@ function App() {
     logEvent("text_modified", { characters: value.length });
   };
 
+  useEffect(() => {
+    const dialog = alphabetDialogRef.current;
+    if (!dialog) return;
+    if (alphabetGuideOpen && !dialog.open) dialog.showModal();
+    if (!alphabetGuideOpen && dialog.open) dialog.close();
+  }, [alphabetGuideOpen]);
+
   const removeConfirmedPhrase = (phraseIndex: number) => {
     const phrases = confirmedText.split(/\n+/).filter((phrase) => phrase.trim());
     if (phraseIndex < 0 || phraseIndex >= phrases.length) return;
@@ -385,6 +394,42 @@ function App() {
               <button className={captureMode === "upload" ? "is-selected" : ""} type="button" aria-pressed={captureMode === "upload"} onClick={() => chooseCaptureMode("upload")} disabled={status === "recording" || status === "processing" || Boolean(videoFile && captureMode !== "upload")}>Upload a clip</button>
             </div>
             {videoFile && <p className="capture-mode-note">Remove the current clip to switch input methods.</p>}
+
+            <div className="capture-guide-bar" lang="vi">
+              <p><strong>ASL:</strong> Đánh vần từng chữ tiếng Anh trong cùng một clip.</p>
+              <button className="guide-link" type="button" onClick={() => setAlphabetGuideOpen(true)}>Xem bảng tay A–Z</button>
+            </div>
+
+            <dialog
+              ref={alphabetDialogRef}
+              className="alphabet-dialog"
+              aria-labelledby="alphabet-dialog-title"
+              onClose={() => setAlphabetGuideOpen(false)}
+              onClick={(event) => { if (event.target === event.currentTarget) event.currentTarget.close(); }}
+            >
+              <div className="alphabet-dialog-header" lang="vi">
+                <div>
+                  <span className="guide-eyebrow">Hướng dẫn ASL</span>
+                  <h2 id="alphabet-dialog-title">Dáng tay tương ứng với chữ cái</h2>
+                </div>
+                <button className="dialog-close" type="button" aria-label="Đóng hướng dẫn" onClick={() => alphabetDialogRef.current?.close()}>×</button>
+              </div>
+              <div className="alphabet-dialog-content" lang="vi">
+                <p>Tạo từng dáng tay theo thứ tự để đánh vần tên hoặc từ tiếng Anh. Giữ trọn bàn tay trong khung hình và chuyển chữ rõ ràng, đều nhịp.</p>
+                <p><strong>J</strong> và <strong>Z</strong> cần chuyển động; các chữ còn lại chủ yếu dùng dáng tay tĩnh.</p>
+                <figure className="alphabet-chart">
+                  <img
+                    src="/asl-fingerspelling-chart.svg"
+                    alt="Bảng chữ cái tay ASL A đến Z, kèm mũi tên chuyển động cho J và Z"
+                    decoding="async"
+                  />
+                  <figcaption>
+                    Bảng tham khảo ASL · <a href="https://commons.wikimedia.org/wiki/File:Asl_alphabet_gallaudet_ann.svg" target="_blank" rel="noreferrer">Wikimedia Commons, public domain</a>
+                  </figcaption>
+                </figure>
+                <p className="alphabet-scope-note">FSboard nhận dạng fingerspelling ASL; hiện chưa hỗ trợ bảng chữ cái của ngôn ngữ ký hiệu Việt Nam hoặc dịch câu ký hiệu hoàn chỉnh.</p>
+              </div>
+            </dialog>
 
             <div className={`preview-frame ${cameraOn && !videoFile ? "preview-camera" : ""}`}>
               {videoFile && previewUrl ? (
